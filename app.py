@@ -147,6 +147,7 @@ def delete_product(id):
     return jsonify('Item deleted')
 
 
+
 # Endpoints for Users -------------------------------------------------------
 @app.route('/user', methods=['POST'])
 def add_user():
@@ -233,6 +234,7 @@ def delete_comment(id):
     db.session.commit()
 
     return jsonify('Comment deleted')
+
 
 
 if __name__ == '__main__':
