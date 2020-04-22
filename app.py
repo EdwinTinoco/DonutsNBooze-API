@@ -202,7 +202,7 @@ def delete_user(id):
 # Endpoints for Comments -------------------------------------------------------    
 @app.route('/comment', methods=['POST'])
 def add_comment():
-    comment = request.json['coment']
+    comment = request.json['comment']
     id_product = request.json['id_product']
     id_user = request.json['id_user']
 
