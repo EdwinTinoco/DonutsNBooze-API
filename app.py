@@ -1,22 +1,19 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from flask_cors import CORS
-from flask_heroku import Heroku
-from environs import Env
 import os
 
 app = Flask(__name__)
-CORS(app)
-heroku = Heroku(app)
+# CORS(app)
+# heroku = Heroku(app)
 
-env = Env()
-env.read_env()
-DATABASE_URL = env("DATABASE_URL")
+# env = Env()
+# env.read_env()
+# DATABASE_URL = env("DATABASE_URL")
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
+# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -93,9 +90,10 @@ user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 
 
-@app.route('/')
+@app.route('/', methods=["GET"])
 def home():    
-    return "<h1>*CRUD donuts && Booze Home Page*</h1>"
+    return "<h1>CRUD donuts && Booze Home Page</h1>"
+    
 
 # Endpoints for Products -------------------------------------------------------
 @app.route('/product', methods=['POST'])
@@ -147,6 +145,95 @@ def delete_product(id):
     db.session.commit()
 
     return jsonify('Item deleted')
+
+
+
+# Endpoints for Users -------------------------------------------------------
+@app.route('/user', methods=['POST'])
+def add_user():
+    name = request.json["name"]
+    email = request.json["email"]
+    password = request.json["password"]
+    role = request.json["role"]
+
+    new_user = User(name, email, password, role)
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    product = Product.query.get(new_user.id)
+    return product_schema.jsonify(new_user)
+
+@app.route('/users', methods=["GET"])
+def get_users():    
+    all_users = User.query.all()
+    result = users_schema.dump(all_users)
+
+    return jsonify(result)
+
+@app.route('/user/<id>', methods=['GET'])
+def get_user(id):
+    user = User.query.get(id)
+
+    result = user_schema.dump(user)
+    return jsonify(result)
+
+@app.route('/user/<id>', methods=['PATCH'])
+def update_password(id):
+    user = User.query.get(id)
+
+    new_password = request.json['password']
+
+    user.passwrod = new_password
+
+    db.session.commit()
+    return user_schema.jsonify(user)
+
+@app.route('/user/<id>', methods=['DELETE'])
+def delete_user(id):
+    record = User.query.get(id)
+    db.session.delete(record)
+    db.session.commit()
+
+    return jsonify('User deleted')
+
+
+# Endpoints for Comments -------------------------------------------------------    
+@app.route('/comment', methods=['POST'])
+def add_comment():
+    comment = request.json["comment"]
+    id_product = request.json["id_product"]
+    id_user = request.json["id_user"]
+
+    new_comment = Comment(comment, id_product, id_user)
+
+    db.session.add(new_comment)
+    db.session.commit()
+
+    comment = Comment.query.get(new_comment.id)
+    return product_schema.jsonify(comment)
+
+@app.route('/comments', methods=["GET"])
+def get_comments():    
+    all_comments = Comment.query.all()
+    result = comments_schema.dump(all_comments)
+
+    return jsonify(result)
+
+@app.route('/comment/<id>', methods=['GET'])
+def get_comment(id):
+    comment = Comment.query.get(id)
+
+    result = comment_schema.dump(comment)
+    return jsonify(result)
+
+@app.route('/comment/<id>', methods=['DELETE'])
+def delete_comment(id):
+    record = Comment.query.get(id)
+    db.session.delete(record)
+    db.session.commit()
+
+    return jsonify('Comment deleted')
 
 
 
