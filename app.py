@@ -149,13 +149,6 @@ def delete_product(id):
     return jsonify('Item deleted')
 
 
-# Endpoints for Users -------------------------------------------------------
-
-
-
-# Endpoints for Comments -------------------------------------------------------
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
