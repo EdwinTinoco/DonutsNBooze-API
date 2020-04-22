@@ -1,19 +1,22 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask_cors import CORS
+from flask_heroku import Heroku
+from environs import Env
 import os
 
 app = Flask(__name__)
-# CORS(app)
-# heroku = Heroku(app)
+CORS(app)
+heroku = Heroku(app)
 
-# env = Env()
-# env.read_env()
-# DATABASE_URL = env("DATABASE_URL")
+env = Env()
+env.read_env()
+DATABASE_URL = env("DATABASE_URL")
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
-# app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -146,8 +149,6 @@ def delete_product(id):
 
     return jsonify('Item deleted')
 
-
-
 # Endpoints for Users -------------------------------------------------------
 @app.route('/user', methods=['POST'])
 def add_user():
@@ -161,8 +162,8 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
 
-    product = Product.query.get(new_user.id)
-    return product_schema.jsonify(new_user)
+    user = User.query.get(new_user.id)
+    return user_schema.jsonify(user)
 
 @app.route('/users', methods=["GET"])
 def get_users():    
@@ -184,7 +185,7 @@ def update_password(id):
 
     new_password = request.json['password']
 
-    user.passwrod = new_password
+    user.password = new_password
 
     db.session.commit()
     return user_schema.jsonify(user)
@@ -201,17 +202,17 @@ def delete_user(id):
 # Endpoints for Comments -------------------------------------------------------    
 @app.route('/comment', methods=['POST'])
 def add_comment():
-    comment = request.json["comment"]
-    id_product = request.json["id_product"]
-    id_user = request.json["id_user"]
+    comment = request.json['coment']
+    id_product = request.json['id_product']
+    id_user = request.json['id_user']
 
     new_comment = Comment(comment, id_product, id_user)
 
     db.session.add(new_comment)
     db.session.commit()
 
-    comment = Comment.query.get(new_comment.id)
-    return product_schema.jsonify(comment)
+    current_comment = Comment.query.get(new_comment.id)
+    return comment_schema.jsonify(current_comment)
 
 @app.route('/comments', methods=["GET"])
 def get_comments():    
@@ -220,11 +221,11 @@ def get_comments():
 
     return jsonify(result)
 
-@app.route('/comment/<id>', methods=['GET'])
-def get_comment(id):
-    comment = Comment.query.get(id)
+ @app.route('/comment/<id_product>', methods=['GET'])
+def get_comment(id_product):
+    comments_by_id_product = Comment.query.get(id_product)
 
-    result = comment_schema.dump(comment)
+    result = comment_schema.dump(comments_by_id_product)
     return jsonify(result)
 
 @app.route('/comment/<id>', methods=['DELETE'])
