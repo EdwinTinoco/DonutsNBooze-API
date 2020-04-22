@@ -221,7 +221,7 @@ def get_comments():
 
     return jsonify(result)
 
- @app.route('/comment/<id_product>', methods=['GET'])
+@app.route('/comment/<id_product>', methods=['GET'])
 def get_comment(id_product):
     comments_by_id_product = Comment.query.get(id_product)
 
