@@ -171,12 +171,16 @@ def get_comments():
 
     return jsonify(result)
 
-@app.route('/comment/<id>', methods=['GET'])
+@app.route('/comments_by_product/<id>', methods=['GET'])
 def get_comment(id):
     # comments_by_id_product = Comment.query.get(id_product)
     comments_by_id_product = Comment.query.filter_by(id_product = id)
+    if len(comments_by_id_product) > 1:
+        result = comments_schema.dump(comments_by_id_product)
+    else:
+        comment_by_product = Comment.query.get(id)
+        result = comment_schema.dump(comment_by_product)
 
-    result = comments_schema.dump(comments_by_id_product)
     return jsonify(result)
 
 @app.route('/comment/<id>', methods=['DELETE'])
