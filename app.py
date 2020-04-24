@@ -149,6 +149,44 @@ def delete_product(id):
 
     return jsonify('Item deleted')
 
+# Endpoints for Comments -------------------------------------------------------    
+@app.route('/comment', methods=['POST'])
+def add_comment():
+    comment = request.json['comment']
+    id_product = request.json['id_product']
+    id_user = request.json['id_user']
+
+    new_comment = Comment(comment, id_product, id_user)
+
+    db.session.add(new_comment)
+    db.session.commit()
+
+    current_comment = Comment.query.get(new_comment.id)
+    return comment_schema.jsonify(current_comment)
+
+@app.route('/comments', methods=["GET"])
+def get_comments():    
+    all_comments = Comment.query.all()
+    result = comments_schema.dump(all_comments)
+
+    return jsonify(result)
+
+@app.route('/comment/<id_product>', methods=['GET'])
+def get_comment(id_product):
+    # comments_by_id_product = Comment.query.get(id_product)
+    comments_by_id_product = Comment.query.filter_by(id_product)
+
+    result = comment_schema.dump(comments_by_id_product)
+    return jsonify(result)
+
+@app.route('/comment/<id>', methods=['DELETE'])
+def delete_comment(id):
+    record = Comment.query.get(id)
+    db.session.delete(record)
+    db.session.commit()
+
+    return jsonify('Comment deleted')
+
 # Endpoints for Users -------------------------------------------------------
 @app.route('/user', methods=['POST'])
 def add_user():
@@ -197,44 +235,6 @@ def delete_user(id):
     db.session.commit()
 
     return jsonify('User deleted')
-
-
-# Endpoints for Comments -------------------------------------------------------    
-@app.route('/comment', methods=['POST'])
-def add_comment():
-    comment = request.json['comment']
-    id_product = request.json['id_product']
-    id_user = request.json['id_user']
-
-    new_comment = Comment(comment, id_product, id_user)
-
-    db.session.add(new_comment)
-    db.session.commit()
-
-    current_comment = Comment.query.get(new_comment.id)
-    return comment_schema.jsonify(current_comment)
-
-@app.route('/comments', methods=["GET"])
-def get_comments():    
-    all_comments = Comment.query.all()
-    result = comments_schema.dump(all_comments)
-
-    return jsonify(result)
-
-@app.route('/comment/<id_product>', methods=['GET'])
-def get_comment(id_product):
-    comments_by_id_product = Comment.query.get(id_product)
-
-    result = comment_schema.dump(comments_by_id_product)
-    return jsonify(result)
-
-@app.route('/comment/<id>', methods=['DELETE'])
-def delete_comment(id):
-    record = Comment.query.get(id)
-    db.session.delete(record)
-    db.session.commit()
-
-    return jsonify('Comment deleted')
 
 
 
